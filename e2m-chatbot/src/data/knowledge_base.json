@@ -1,0 +1,53 @@
+{
+    "company": {
+        "name": "E2M Solutions",
+        "description": "A full-service white label digital agency that partners with other digital agencies to help them scale and grow their businesses.",
+        "mission": "To empower digital agency owners to achieve business growth with peace of mind and attain freedom in both their professional and personal lives.",
+        "vision": "To become a leading and preferred white label partner for digital agencies.",
+        "experience": "Over 13 years of experience, serving over 400 agency partners and completing more than 8,000 projects.",
+        "locations": [
+            "San Diego, California",
+            "Denver, Colorado",
+            "Ahmedabad, India"
+        ]
+    },
+    "services": [
+        {
+            "name": "Website Design and Development",
+            "details": "White label web design and development services for WordPress, Shopify, BigCommerce, and WooCommerce. Includes unlimited projects and revisions with fast turnaround."
+        },
+        {
+            "name": "E-commerce Solutions",
+            "details": "Specialized development for online stores using top platforms like Shopify and WooCommerce."
+        },
+        {
+            "name": "SEO (Search Engine Optimization)",
+            "details": "Comprehensive SEO services including AI SEO, Local SEO, and eCommerce SEO to improve search visibility."
+        },
+        {
+            "name": "PPC (Pay-Per-Click)",
+            "details": "White label PPC management to drive targeted traffic and conversions."
+        },
+        {
+            "name": "AI Consulting & Automation",
+            "details": "Fractional AI consulting and implementation of AI-driven automation workflows."
+        },
+        {
+            "name": "Content Writing",
+            "details": "High-quality white label content creation for blogs, websites, and marketing materials."
+        },
+        {
+            "name": "Maintenance & Support",
+            "details": "IT hosting, server administration, and ongoing website maintenance/support services."
+        }
+    ],
+    "benefits": [
+        "Unlimited projects/tasks",
+        "Unlimited revisions",
+        "Fast turnaround times",
+        "Dedicated human support",
+        "100% ownership of work",
+        "Fixed monthly cost (No hidden fees)",
+        "White label privacy (NDAs signed)"
+    ]
+}

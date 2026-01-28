@@ -1,0 +1,442 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>E2M Chatbot | Admin Dashboard</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap');
+
+        :root {
+            /* 
+         Professional Design System (HSL)
+         Oxford Slate & Deep Navy
+      */
+            --p-h: 222;
+            --p-s: 47%;
+            --p-l: 11%;
+
+            --primary: hsl(var(--p-h), var(--p-s), var(--p-l));
+            --primary-soft: hsla(var(--p-h), var(--p-s), var(--p-l), 0.05);
+
+            --accent: hsl(217, 91%, 60%);
+            --accent-soft: hsla(217, 91%, 60%, 0.1);
+
+            --slate-50: hsl(215, 25%, 98%);
+            --slate-100: hsl(215, 20%, 94%);
+            --slate-200: hsl(215, 16%, 88%);
+            --slate-400: hsl(215, 12%, 65%);
+            --slate-600: hsl(215, 10%, 35%);
+            --slate-800: hsl(215, 14%, 15%);
+
+            --surface: #ffffff;
+            --border: var(--slate-200);
+
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+            background-color: var(--slate-50);
+            color: var(--slate-800);
+            min-height: 100vh;
+            display: flex;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            padding: 2rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            position: fixed;
+            height: 100vh;
+        }
+
+        .sidebar-brand h2 {
+            font-family: 'Instrument Serif', serif;
+            font-size: 2rem;
+            color: var(--primary);
+        }
+
+        .nav-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            border-radius: var(--radius-sm);
+            text-decoration: none;
+            color: var(--slate-600);
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .nav-item.active {
+            background: var(--primary-soft);
+            color: var(--primary);
+        }
+
+        .nav-item:hover:not(.active) {
+            background: var(--slate-100);
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 280px;
+            flex: 1;
+            padding: 3rem;
+            max-width: 1200px;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2.5rem;
+        }
+
+        header h1 {
+            font-size: 1.875rem;
+            font-weight: 700;
+        }
+
+        /* Stats */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .stat-card {
+            background: var(--surface);
+            padding: 1.5rem;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .stat-card .label {
+            font-size: 0.8125rem;
+            font-weight: 600;
+            color: var(--slate-400);
+            text-transform: uppercase;
+            letter-spacing: 0.025em;
+        }
+
+        .stat-card .value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-top: 0.5rem;
+        }
+
+        /* Filters */
+        .filters-bar {
+            background: var(--surface);
+            padding: 1rem;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border);
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            align-items: center;
+        }
+
+        .search-wrapper {
+            flex: 1;
+            position: relative;
+        }
+
+        .search-wrapper i {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--slate-400);
+            width: 18px;
+        }
+
+        .search-wrapper input {
+            width: 100%;
+            padding: 0.75rem 1rem 0.75rem 2.75rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-family: inherit;
+            outline: none;
+        }
+
+        .filters-bar select {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-family: inherit;
+            background: white;
+            outline: none;
+            min-width: 160px;
+        }
+
+        /* Leads Table/Cards */
+        .lead-card {
+            background: var(--surface);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border);
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .lead-card-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--slate-50);
+        }
+
+        .lead-name-group h3 {
+            font-size: 1.125rem;
+            font-weight: 700;
+        }
+
+        .lead-name-group p {
+            font-size: 0.875rem;
+            color: var(--slate-400);
+            margin-top: 0.25rem;
+        }
+
+        .interaction-item {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .interaction-item:last-child {
+            border-bottom: none;
+        }
+
+        .interaction-meta {
+            display: flex;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+            align-items: center;
+        }
+
+        .badge {
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 0.25rem 0.75rem;
+            border-radius: var(--radius-full);
+            text-transform: uppercase;
+        }
+
+        .badge-high {
+            background: hsla(0, 72%, 50%, 0.1);
+            color: hsl(0, 72%, 50%);
+        }
+
+        .badge-medium {
+            background: hsla(38, 92%, 50%, 0.1);
+            color: hsl(38, 92%, 50%);
+        }
+
+        .badge-low {
+            background: hsla(150, 60%, 35%, 0.1);
+            color: hsl(150, 60%, 35%);
+        }
+
+        .status-answered {
+            border-left: 4px solid hsl(150, 60%, 35%);
+        }
+
+        .status-unanswered {
+            border-left: 4px solid hsl(0, 72%, 50%);
+        }
+
+        .q-a {
+            display: grid;
+            gap: 0.75rem;
+        }
+
+        .q-a p {
+            font-size: 0.9375rem;
+            line-height: 1.5;
+        }
+
+        .timestamp {
+            font-size: 0.75rem;
+            color: var(--slate-400);
+            margin-top: 0.5rem;
+        }
+
+        .urgent-tag {
+            background: hsl(0, 72%, 50%);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: var(--radius-full);
+            font-size: 0.75rem;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+    </style>
+</head>
+
+<body>
+    <aside class="sidebar">
+        <div class="sidebar-brand">
+            <h2>E2M.</h2>
+        </div>
+        <nav>
+            <ul class="nav-list">
+                <li>
+                    <a href="index.html" class="nav-item">
+                        <i data-lucide="message-square"></i> Live Chat
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="nav-item active">
+                        <i data-lucide="layout-dashboard"></i> Dashboard
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </aside>
+
+    <main class="main-content">
+        <header>
+            <h1>Lead Console</h1>
+        </header>
+
+        <div id="stats-container" class="stats-grid"></div>
+
+        <div class="filters-bar">
+            <div class="search-wrapper">
+                <i data-lucide="search"></i>
+                <input type="text" id="search-input" placeholder="Filter by name or email">
+            </div>
+            <select id="intent-filter">
+                <option value="ALL">All Intents</option>
+                <option value="HIGH">High Priority</option>
+                <option value="MEDIUM">Medium Priority</option>
+                <option value="LOW">Low Priority</option>
+            </select>
+            <select id="status-filter">
+                <option value="ALL">All Status</option>
+                <option value="ANSWERED">Answered</option>
+                <option value="UNANSWERED">Unanswered</option>
+            </select>
+        </div>
+
+        <div id="leads-container"></div>
+    </main>
+
+    <script>
+        const statsContainer = document.getElementById('stats-container');
+        const leadsContainer = document.getElementById('leads-container');
+        const searchInput = document.getElementById('search-input');
+        const intentFilter = document.getElementById('intent-filter');
+        const statusFilter = document.getElementById('status-filter');
+
+        function loadLeads() {
+            const leads = JSON.parse(localStorage.getItem('e2m_all_leads') || '[]');
+            const searchTerm = searchInput.value.toLowerCase();
+            const intentVal = intentFilter.value;
+            const statusVal = statusFilter.value;
+
+            const totalInteractions = leads.reduce((sum, l) => sum + l.interactions.length, 0);
+            const unansweredCount = leads.reduce((sum, l) => sum + l.interactions.filter(i => i.status === 'UNANSWERED').length, 0);
+
+            statsContainer.innerHTML = `
+        <div class="stat-card">
+          <p class="label">Total Leads</p>
+          <p class="value">${leads.length}</p>
+        </div>
+        <div class="stat-card">
+          <p class="label">Total Inquiries</p>
+          <p class="value">${totalInteractions}</p>
+        </div>
+        <div class="stat-card">
+          <p class="label">Pending Review</p>
+          <p class="value" style="color: ${unansweredCount > 0 ? 'hsl(0, 72%, 50%)' : 'inherit'}">${unansweredCount}</p>
+        </div>
+      `;
+
+            const filteredLeads = leads.filter(lead => {
+                const matchesSearch = lead.name.toLowerCase().includes(searchTerm) || lead.email.toLowerCase().includes(searchTerm);
+                const hasMatch = lead.interactions.some(i => {
+                    return (intentVal === 'ALL' || i.intent === intentVal) && (statusVal === 'ALL' || i.status === statusVal);
+                });
+                return matchesSearch && (intentVal === 'ALL' && statusVal === 'ALL' ? true : hasMatch);
+            });
+
+            if (filteredLeads.length === 0) {
+                leadsContainer.innerHTML = '<div style="padding: 4rem; text-align: center; color: var(--slate-400)">No matches found</div>';
+                lucide.createIcons();
+                return;
+            }
+
+            leadsContainer.innerHTML = filteredLeads.map(lead => `
+        <div class="lead-card">
+          <div class="lead-card-header">
+            <div class="lead-name-group">
+              <h3>${lead.name} ${lead.interactions.some(i => i.status === 'UNANSWERED' && i.intent === 'HIGH') ? '<span class="urgent-tag"><i data-lucide="zap"></i> Priority</span>' : ''}</h3>
+              <p>${lead.email} • Lead ID: ${lead.timestamp.slice(-6)}</p>
+            </div>
+            <div class="timestamp">${new Date(lead.timestamp).toLocaleDateString()}</div>
+          </div>
+          <div class="interaction-list">
+            ${lead.interactions
+                    .filter(i => (intentVal === 'ALL' || i.intent === intentVal) && (statusVal === 'ALL' || i.status === statusVal))
+                    .map(i => `
+              <div class="interaction-item status-${i.status.toLowerCase()}">
+                <div class="interaction-meta">
+                  <span class="badge badge-${i.intent.toLowerCase()}">${i.intent} Intent</span>
+                  <span class="badge" style="background: var(--slate-100); color: var(--slate-600)">${i.status}</span>
+                </div>
+                <div class="q-a">
+                  <p><strong>Query:</strong> ${i.question}</p>
+                  <p><strong>Response:</strong> ${i.answer}</p>
+                </div>
+                <div class="timestamp">${new Date(i.timestamp).toLocaleTimeString()}</div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `).join('');
+
+            lucide.createIcons();
+        }
+
+        [searchInput, intentFilter, statusFilter].forEach(el => el.addEventListener('input', loadLeads));
+        window.onload = loadLeads;
+        setInterval(loadLeads, 10000);
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,507 @@
+{
+  "name": "AI-Student-Feedback-Processor",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "AI-Powered Student Feedback Collector",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Student Email"
+            },
+            {
+              "fieldLabel": "Feedback Message"
+            },
+            {
+              "fieldLabel": "Urgent?",
+              "fieldType": "checkbox",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Yes"
+                  },
+                  {
+                    "option": "No"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.5,
+      "position": [
+        0,
+        -96
+      ],
+      "id": "ebc37b93-ade9-48c6-a232-7cb523c06fd1",
+      "name": "Student Feedback Form",
+      "webhookId": "447acd14-10f8-4094-9fa6-4984f20f1151"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Read exact field names from n8n Form output\nconst email = $json[\"Student Email\"] || \"\";\nconst feedback = $json[\"Feedback Message\"] || \"\";\nconst urgentArray = $json[\"Urgent?\"] || [];\n\n// Convert Urgent array to boolean\nconst urgentCheckbox = urgentArray.includes(\"Yes\");\n\n// Clean feedback text\nconst cleanedFeedback = feedback.trim().replace(/\\s+/g, \" \");\n\n// Calculate feedback length\nconst feedbackLength = cleanedFeedback.length;\n\n// Rule-based urgency logic\nlet urgencyFlag = \"Low\";\n\nif (urgentCheckbox === true || feedbackLength > 200) {\n  urgencyFlag = \"High\";\n} else if (feedbackLength > 100) {\n  urgencyFlag = \"Medium\";\n}\n\n// Return structured output\nreturn {\n  student_email: email.toLowerCase(),\n  feedback_text: cleanedFeedback,\n  feedback_length: feedbackLength,\n  urgency_flag: urgencyFlag,\n  submitted_at: new Date().toISOString()\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        -96
+      ],
+      "id": "a48df972-7eac-48e4-8567-265c7b755c04",
+      "name": "Clean & Format Input"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analyze the following student feedback.\n\nTasks:\n1. Determine sentiment: Positive, Neutral, or Negative\n2. Categorize it into ONE category:\n   - Teaching Quality\n   - Assignments\n   - Exams\n   - Platform / Tools\n3. Determine urgency level: High, Medium, or Low\n\nFeedback:\n{{$json.feedback_text}}\n\nRespond ONLY in JSON format like this:\n{\n  \"sentiment\": \"\",\n  \"category\": \"\",\n  \"ai_urgency\": \"\"\n}\n",
+        "options": {
+          "systemMessage": "You are an assistant that analyzes student feedback for academic institutions.\nAlways respond in valid JSON only.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        448,
+        -96
+      ],
+      "id": "b66b0f36-6a57-4288-a815-ca54c587a746",
+      "name": "AI: Analyze Sentiment & Category"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get OpenAI output string\nconst aiOutputRaw = $json.output || \"{}\";\n\nlet aiData;\n\n// Safely parse JSON\ntry {\n  aiData = JSON.parse(aiOutputRaw);\n} catch (error) {\n  aiData = {\n    sentiment: \"Unknown\",\n    category: \"Unknown\",\n    ai_urgency: \"Low\"\n  };\n}\n\n// Merge AI data with existing workflow data\nreturn {\n  sentiment: aiData.sentiment || \"Unknown\",\n  category: aiData.category || \"Unknown\",\n  ai_urgency: aiData.ai_urgency || \"Low\"\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        800,
+        -96
+      ],
+      "id": "00df09ee-a56c-429c-912d-000d9beb52d3",
+      "name": "Parse AI Response"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "c2aee5c3-52b2-4142-8d1d-1bd8ba635d76",
+              "leftValue": "={{$json.sentiment}}",
+              "rightValue": "Negative",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "51b2b06d-5a34-4451-ac9f-31e542b70ac4",
+              "leftValue": "={{$json.ai_urgency}}",
+              "rightValue": "High",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1024,
+        -96
+      ],
+      "id": "8c1cbe9d-3644-401d-a2db-3adbdda4a620",
+      "name": "High Urgency or Negative"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Create a well-formatted Slack alert message using the following data.\n\nStudent Email: {{ $('Clean & Format Input').item.json.student_email }}\nFeedback: {{ $('Clean & Format Input').item.json.feedback_text }}\nSentiment: {{$json.sentiment}}\nCategory: {{$json.category}}\nAI Urgency: {{$json.ai_urgency}}\n\nGuidelines:\n- Use clear headings\n- Keep it short and readable\n- Use emojis sparingly\n- Do NOT add extra information\n\nReturn only the final message text.\n",
+        "options": {
+          "systemMessage": "You format alerts for academic administrators.\nYour output should be professional, clear, and Slack-friendly.\nRespond with plain text only.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1248,
+        -96
+      ],
+      "id": "07305b4d-f641-4e39-9f5f-e3f5690b3ed2",
+      "name": "Generate Slack Message"
+    },
+    {
+      "parameters": {
+        "model": "z-ai/glm-4.5-air:free",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        1328,
+        128
+      ],
+      "id": "c26e7601-d184-4d4f-ae0e-c7439b0b1da3",
+      "name": "GLM-4.5 (Formatting)",
+      "credentials": {
+        "openRouterApi": {
+          "id": "JGw3UTOK7mm1bfK3",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0A6YBJJSJ2",
+          "mode": "list",
+          "cachedResultName": "n8nbotslack"
+        },
+        "text": "={{ $json.output }}",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.4,
+      "position": [
+        1600,
+        -96
+      ],
+      "id": "d0b82c78-ff1b-4e30-bafd-3f37be7ad7fa",
+      "name": "Notify Admin Channel",
+      "webhookId": "8ff0b215-2b9d-4a3f-b178-1b858e35c55b",
+      "credentials": {
+        "slackApi": {
+          "id": "RkC6vatGscsD0zmt",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Prepare output array\nconst results = [];\n\n// Loop over all incoming items\nfor (const item of $items()) {\n    const slackData = item.json;\n\n    // Skip if message is missing\n    if (!slackData || !slackData.message) continue;\n\n    const message = slackData.message;\n\n    // Helper function to clean text\n    const cleanText = (text) => text ? text.replace(/\\n/g, '').trim() : '';\n\n    // Extract email\n    const studentEmail = message.blocks?.[0]?.elements?.[0]?.elements?.find(el => el.type === 'link')?.url?.replace('mailto:', '') || '';\n\n    // Extract comment\n    const comment = cleanText(message.blocks?.[0]?.elements?.[0]?.elements?.find(el => el.type === 'text' && el.text.startsWith(' COMMENT: '))?.text.replace(' COMMENT: ', ''));\n\n    // Extract sentiment\n    const sentiment = cleanText(message.blocks?.[0]?.elements?.[0]?.elements?.find(el => el.type === 'text' && el.text.startsWith(' SENTIMENT: '))?.text.replace(' SENTIMENT: ', ''));\n\n    // Extract category\n    const category = cleanText(message.blocks?.[0]?.elements?.[0]?.elements?.find(el => el.type === 'text' && el.text.startsWith(' CATEGORY: '))?.text.replace(' CATEGORY: ', ''));\n\n    // Extract urgency\n    const urgency = cleanText(message.blocks?.[0]?.elements?.[0]?.elements?.find(el => el.type === 'text' && el.text.startsWith(' URGENCY: '))?.text.replace(' URGENCY: ', ''));\n\n    // Timestamp and user\n    const timestamp = cleanText(message.ts);\n    const userId = cleanText(message.user);\n\n    // Workflow link (italic link)\n    const workflowLink = cleanText(message.blocks?.[0]?.elements?.[0]?.elements?.find(el => el.type === 'link' && el.style?.italic)?.url);\n\n    // Add to results\n    results.push({\n        json: {\n            Timestamp: timestamp,\n            StudentEmail: studentEmail,\n            Comment: comment,\n            Sentiment: sentiment,\n            Category: category,\n            Urgency: urgency,\n            UserID: userId,\n            WorkflowLink: workflowLink\n        }\n    });\n}\n\nreturn results;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1824,
+        -96
+      ],
+      "id": "a36312ca-00e6-4114-be96-9feba53864bc",
+      "name": "Map Data for Sheets"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1BvHo6EWNIPbGk4WkPGxiHmQqtVTSCOHboDIdnnRvC2c",
+          "mode": "list",
+          "cachedResultName": "Student Feedback",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1BvHo6EWNIPbGk4WkPGxiHmQqtVTSCOHboDIdnnRvC2c/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1BvHo6EWNIPbGk4WkPGxiHmQqtVTSCOHboDIdnnRvC2c/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Timestamp": "={{ $json.Timestamp }}",
+            "StudentEmail": "={{ $json.StudentEmail }}",
+            "Comment": "={{ $json.Comment }}",
+            "Sentiment": "={{ $json.Sentiment }}",
+            "Category": "={{ $json.Category }}",
+            "Urgency": "={{ $json.Urgency }}",
+            "UserID": "={{ $json.UserID }}",
+            "WorkflowLink": "={{ $json.WorkflowLink }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "StudentEmail",
+              "displayName": "StudentEmail",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Comment",
+              "displayName": "Comment",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Sentiment",
+              "displayName": "Sentiment",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Category",
+              "displayName": "Category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Urgency",
+              "displayName": "Urgency",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "UserID",
+              "displayName": "UserID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "WorkflowLink",
+              "displayName": "WorkflowLink",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2048,
+        -96
+      ],
+      "id": "6ac276d5-f625-4974-b75f-cd88d9f62bd0",
+      "name": "Log Feedback Record",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "IApdEjLW5FHw5HUW",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Prepare output array\nconst results = [];\n\nfor (const item of $items()) {\n    const data = item.json;\n\n    // Fallbacks in case any field is missing\n    const studentEmail = data.StudentEmail || '';\n    const comment = data.Comment || '';\n    const sentiment = data.Sentiment || '';\n    const category = data.Category || '';\n    const urgency = data.Urgency || '';\n    const timestamp = data.Timestamp || '';\n    const workflowLink = data.WorkflowLink || '';\n\n    // Dynamic subject line (can change per message)\n    // Example: \"New Student Feedback: Negative - Assignments\"\n    const subject = `Student Feedback [${sentiment}] - ${category}`;\n\n    // Construct email body\n    const body = `\nHello Team,\n\nYou have received new student feedback:\n\n- **Student Email:** ${studentEmail}\n- **Comment:** ${comment}\n- **Sentiment:** ${sentiment}\n- **Category:** ${category}\n- **Urgency:** ${urgency}\n- **Timestamp:** ${timestamp}\n- **Workflow Link:** ${workflowLink}\n\nPlease take necessary action.\n\nRegards,\nAutomated Feedback System\n`;\n\n    // Push to results array for Email node\n    results.push({\n        json: {\n            to: 'grefithgohel90@gmail.com', // replace with actual recipient\n            subject: subject,\n            body: body\n        }\n    });\n}\n\nreturn results;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2272,
+        -96
+      ],
+      "id": "5e4f294a-1365-482c-bfd7-0fb75201091c",
+      "name": "Prepare Email Notification"
+    },
+    {
+      "parameters": {
+        "model": "z-ai/glm-4.5-air:free",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        528,
+        128
+      ],
+      "id": "a2a6ceb5-773a-46d7-a043-e91cb36a0491",
+      "name": "GLM-4.5 (Analysis)",
+      "credentials": {
+        "openRouterApi": {
+          "id": "JGw3UTOK7mm1bfK3",
+          "name": "OpenRouter account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Student Feedback Form": {
+      "main": [
+        [
+          {
+            "node": "Clean & Format Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clean & Format Input": {
+      "main": [
+        [
+          {
+            "node": "AI: Analyze Sentiment & Category",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI: Analyze Sentiment & Category": {
+      "main": [
+        [
+          {
+            "node": "Parse AI Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse AI Response": {
+      "main": [
+        [
+          {
+            "node": "High Urgency or Negative",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "High Urgency or Negative": {
+      "main": [
+        [
+          {
+            "node": "Generate Slack Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Slack Message": {
+      "main": [
+        [
+          {
+            "node": "Notify Admin Channel",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GLM-4.5 (Formatting)": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Generate Slack Message",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify Admin Channel": {
+      "main": [
+        [
+          {
+            "node": "Map Data for Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Map Data for Sheets": {
+      "main": [
+        [
+          {
+            "node": "Log Feedback Record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Feedback Record": {
+      "main": [
+        [
+          {
+            "node": "Prepare Email Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Email Notification": {
+      "main": [
+        []
+      ]
+    },
+    "GLM-4.5 (Analysis)": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI: Analyze Sentiment & Category",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "a0f41ccc-1a5d-4bcb-9924-21a529868150",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "98de5aeae2e23f38b8955904e18c87188ec8ac7407a49d2fb176d9de838fde06"
+  },
+  "id": "yqPcl86qVedozWvDVf7M3",
+  "tags": []
+}
