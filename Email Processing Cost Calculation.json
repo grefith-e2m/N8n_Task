@@ -1,0 +1,225 @@
+{
+  "name": "Email Processing Cost Calculation",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Email Processing Cost Calculation",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Scenario Name",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Low Volume / Startup"
+                  },
+                  {
+                    "option": "Medium Volume / Growth"
+                  },
+                  {
+                    "option": "High Volume / Enterprise"
+                  },
+                  {
+                    "option": "Priority Support / Bulk"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Emails/day"
+            },
+            {
+              "fieldLabel": "Tasks/email"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.5,
+      "position": [
+        0,
+        0
+      ],
+      "id": "0eb1a3f6-5a1e-49c8-9cec-8a35a944f80d",
+      "name": "Cost Calculation Form",
+      "webhookId": "fa3721ed-a646-4033-89a4-4d1799fb6e9e"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Get the input data from the Form\nconst input = $json;\n\n// 2. Convert string inputs to Numbers to prevent \"NaN\" errors\nconst emailsPerDay = Number(input[\"Emails/day\"]) || 0;\nconst tasksPerEmail = Number(input[\"Tasks/email\"]) || 0;\nconst n8nCost = 50; // Fixed cost [cite: 32]\n\n// 3. Perform Calculations [cite: 28, 29, 30, 31]\nconst tasksPerDay = emailsPerDay * tasksPerEmail;\nconst tasksPerMonth = tasksPerDay * 30;\n\n// Zapier calculation: Assuming average of $0.02 per task [cite: 30]\nconst zapierCostMonth = Math.round(tasksPerMonth * 0.02); \nconst savingsMonth = zapierCostMonth - n8nCost;\n\n// 4. Return the exact 7 columns required by the problem statement \nreturn [\n  {\n    json: {\n      \"Scenario\": input[\"Scenario Name\"],\n      \"Emails/day\": emailsPerDay,\n      \"Tasks/email\": tasksPerEmail,\n      \"Tasks/day\": tasksPerDay,\n      \"Tasks/month\": tasksPerMonth,\n      \"Zapier cost/month\": `$${zapierCostMonth}`,\n      \"n8n cost/month\": `$${n8nCost}`,\n      \"Savings/month\": `$${savingsMonth}`\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        0
+      ],
+      "id": "7d98ccb3-f0e6-4163-a461-7b1d6ddfbf0e",
+      "name": "Calculate Monthly Savings"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1zjEXs4mX12fuKxVQo0d3pJNP-gNvgv_7mRdMhpMdvGU",
+          "mode": "list",
+          "cachedResultName": "Email Processing Cost Calculation",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1zjEXs4mX12fuKxVQo0d3pJNP-gNvgv_7mRdMhpMdvGU/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1zjEXs4mX12fuKxVQo0d3pJNP-gNvgv_7mRdMhpMdvGU/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Scenario": "={{ $json.Scenario }}",
+            "Emails/day": "={{ $json[\"Emails/day\"] }}",
+            "Tasks/email": "={{ $json[\"Tasks/email\"] }}",
+            "Tasks/day": "={{ $json[\"Tasks/day\"] }}",
+            "Tasks/month": "={{ $json[\"Tasks/month\"] }}",
+            "Zapier cost/month": "={{ $json[\"Zapier cost/month\"] }}",
+            "n8n cost/month": "={{ $json[\"n8n cost/month\"] }}",
+            "Savings/month": "={{ $json[\"Savings/month\"] }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Scenario",
+              "displayName": "Scenario",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Emails/day",
+              "displayName": "Emails/day",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Tasks/email",
+              "displayName": "Tasks/email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Tasks/day",
+              "displayName": "Tasks/day",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Tasks/month",
+              "displayName": "Tasks/month",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Zapier cost/month",
+              "displayName": "Zapier cost/month",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "n8n cost/month",
+              "displayName": "n8n cost/month",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Savings/month",
+              "displayName": "Savings/month",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        448,
+        0
+      ],
+      "id": "cd3cc084-5359-4635-88bf-aecd70f3341b",
+      "name": "Append to Comparison Table",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "IApdEjLW5FHw5HUW",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Cost Calculation Form": {
+      "main": [
+        [
+          {
+            "node": "Calculate Monthly Savings",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculate Monthly Savings": {
+      "main": [
+        [
+          {
+            "node": "Append to Comparison Table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "8c05436d-343f-4884-9189-a24982cccb3b",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "98de5aeae2e23f38b8955904e18c87188ec8ac7407a49d2fb176d9de838fde06"
+  },
+  "id": "vF14kElNQVzpxFwHsyd3D",
+  "tags": []
+}
