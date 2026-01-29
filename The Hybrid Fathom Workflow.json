@@ -1,0 +1,359 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        -128
+      ],
+      "id": "4b411f42-55aa-4295-b4cf-a351b13e3744",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "model": "meta-llama/llama-4-maverick-17b-128e-instruct",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        520,
+        96
+      ],
+      "id": "92a17131-97b6-43f4-8226-b052d5b01ff8",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "V0odoSGVOARpFXEI",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0A6YBJJSJ2",
+          "mode": "list",
+          "cachedResultName": "n8nbotslack"
+        },
+        "text": "=",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.4,
+      "position": [
+        1248,
+        -272
+      ],
+      "id": "7e5dc652-a81e-4419-9d70-11cf902ae7a1",
+      "name": "Send a message",
+      "webhookId": "6d49fe08-25f5-4951-969b-e31187b4427e",
+      "credentials": {
+        "slackApi": {
+          "id": "RkC6vatGscsD0zmt",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// JavaScript to clean timestamps\nconst input = items[0].json.transcript;\nconst cleaned = input.replace(/\\[\\d{2}:\\d{2}\\]/g, '').trim();\n\nreturn {\n  cleaned_transcript: cleaned\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        -128
+      ],
+      "id": "499dfa13-de83-4247-9a69-30354b64c841",
+      "name": "Clean Timestamps"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.cleaned_transcript }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "Extract the action items from the following meeting transcript. Return them as a comma-separated list or a JSON array. Only include the tasks."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        448,
+        -128
+      ],
+      "id": "e15bbe65-ebef-42dc-b593-f8352d4c485b",
+      "name": "Extract Action Items",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// This extracts the tasks and turns them into individual items for n8n\nconst rawText = items[0].json.text;\n\n// Regex to find the JSON array inside the text\nconst jsonMatch = rawText.match(/\\[.*\\]/s);\n\nif (jsonMatch) {\n  const tasks = JSON.parse(jsonMatch[0]);\n  return tasks.map(task => ({ json: { action_item: task } }));\n} else {\n  // Fallback: split by comma if JSON isn't found\n  return rawText.split(',').map(task => ({ json: { action_item: task.trim() } }));\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        800,
+        -128
+      ],
+      "id": "ea904ce5-2bec-4d20-bb4a-ab6e77cb6165",
+      "name": "Format Items for Airtable"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1024,
+        -128
+      ],
+      "id": "7ac3ddf3-45bd-44b7-97de-6b092ac92040",
+      "name": "Loop Through Tasks"
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "app8JfMx6kcCXvRya",
+          "mode": "list",
+          "cachedResultName": "Untitled Base",
+          "cachedResultUrl": "https://airtable.com/app8JfMx6kcCXvRya"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblNFoOJ4qw4rE12S",
+          "mode": "list",
+          "cachedResultName": "Table 1",
+          "cachedResultUrl": "https://airtable.com/app8JfMx6kcCXvRya/tblNFoOJ4qw4rE12S"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "action_item": "={{ $json.action_item }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "action_item",
+              "displayName": "action_item",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Notes",
+              "displayName": "Notes",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Assignee",
+              "displayName": "Assignee",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Todo",
+                  "value": "Todo"
+                },
+                {
+                  "name": "In progress",
+                  "value": "In progress"
+                },
+                {
+                  "name": "Done",
+                  "value": "Done"
+                }
+              ],
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Attachments",
+              "displayName": "Attachments",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Attachment Summary",
+              "displayName": "Attachment Summary",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        1248,
+        -80
+      ],
+      "id": "14f3a88c-1a8c-4513-b2c0-4f0e3c6d3754",
+      "name": "Create Airtable Record",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "RIZF8xQEOceKbdod",
+          "name": "Airtable Personal Access Token account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    }
+  ],
+  "pinData": {
+    "When clicking ‘Execute workflow’": [
+      {
+        "json": {
+          "transcript": "[00:01] Jay: Let's finalize the budget by Friday. [00:12] Rutvi: I will handle the venue booking. [00:45] Jay: Please send the invite to the team."
+        }
+      }
+    ]
+  },
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Clean Timestamps",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Extract Action Items",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clean Timestamps": {
+      "main": [
+        [
+          {
+            "node": "Extract Action Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Action Items": {
+      "main": [
+        [
+          {
+            "node": "Format Items for Airtable",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Items for Airtable": {
+      "main": [
+        [
+          {
+            "node": "Loop Through Tasks",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Through Tasks": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create Airtable Record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Airtable Record": {
+      "main": [
+        [
+          {
+            "node": "Loop Through Tasks",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "b9023a1c-7365-4dde-9303-ec1701597ec4",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "98de5aeae2e23f38b8955904e18c87188ec8ac7407a49d2fb176d9de838fde06"
+  },
+  "id": "7kLN1TeE4_QPMvxMQv_qb",
+  "tags": []
+}
