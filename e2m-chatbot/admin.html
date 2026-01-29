@@ -10,228 +10,276 @@
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap');
 
         :root {
-            /* 
-         Professional Design System (HSL)
-         Oxford Slate & Deep Navy
-      */
-            --p-h: 222;
-            --p-s: 47%;
-            --p-l: 11%;
+            /* Premium Admin Design System */
 
-            --primary: hsl(var(--p-h), var(--p-s), var(--p-l));
-            --primary-soft: hsla(var(--p-h), var(--p-s), var(--p-l), 0.05);
+            /* Brand - Deep Royal Navy */
+            --primary: hsl(222, 47%, 11%);
+            --primary-light: hsl(222, 47%, 16%);
+            --primary-soft: hsla(222, 47%, 11%, 0.04);
 
-            --accent: hsl(217, 91%, 60%);
-            --accent-soft: hsla(217, 91%, 60%, 0.1);
+            /* Accent - Electric Blue */
+            --accent: hsl(217, 100%, 60%);
+            --accent-soft: hsla(217, 100%, 60%, 0.08);
 
-            --slate-50: hsl(215, 25%, 98%);
-            --slate-100: hsl(215, 20%, 94%);
-            --slate-200: hsl(215, 16%, 88%);
-            --slate-400: hsl(215, 12%, 65%);
-            --slate-600: hsl(215, 10%, 35%);
-            --slate-800: hsl(215, 14%, 15%);
-
+            /* Surfaces */
+            --bg-body: hsl(215, 20%, 98%);
             --surface: #ffffff;
-            --border: var(--slate-200);
+            --border: hsl(215, 14%, 90%);
 
-            --radius-sm: 8px;
-            --radius-md: 12px;
-            --radius-lg: 16px;
+            /* Neutrals */
+            --text-main: hsl(215, 20%, 15%);
+            --text-muted: hsl(215, 10%, 45%);
 
-            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            --shadow-lg: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+            /* Status */
+            --danger: hsl(0, 84%, 60%);
+            --danger-soft: hsla(0, 84%, 60%, 0.1);
+
+            /* Radii */
+            --r-md: 10px;
+            --r-lg: 16px;
+            --r-full: 9999px;
+
+            /* Shadows */
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04);
+            --shadow-card: 0 4px 12px -2px rgba(0, 0, 0, 0.06), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+
+            --transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
         }
 
         * {
-            box-sizing: border-box;
             margin: 0;
             padding: 0;
+            box-sizing: border-box;
         }
 
         body {
-            font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
-            background-color: var(--slate-50);
-            color: var(--slate-800);
-            min-height: 100vh;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
             display: flex;
+            min-height: 100vh;
         }
 
         /* Sidebar */
         .sidebar {
-            width: 280px;
+            width: 260px;
             background: var(--surface);
             border-right: 1px solid var(--border);
-            padding: 2rem 1.5rem;
+            padding: 24px;
             display: flex;
             flex-direction: column;
-            gap: 2rem;
             position: fixed;
             height: 100vh;
+            z-index: 10;
         }
 
-        .sidebar-brand h2 {
+        .brand {
+            margin-bottom: 40px;
+        }
+
+        .brand h2 {
             font-family: 'Instrument Serif', serif;
             font-size: 2rem;
             color: var(--primary);
+            letter-spacing: -0.02em;
         }
 
         .nav-list {
             list-style: none;
             display: flex;
             flex-direction: column;
-            gap: 0.5rem;
+            gap: 8px;
         }
 
         .nav-item {
             display: flex;
             align-items: center;
-            gap: 0.75rem;
-            padding: 0.75rem 1rem;
-            border-radius: var(--radius-sm);
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: var(--r-md);
+            color: var(--text-muted);
             text-decoration: none;
-            color: var(--slate-600);
             font-weight: 500;
-            transition: all 0.2s;
+            transition: var(--transition);
         }
 
+        .nav-item:hover,
         .nav-item.active {
             background: var(--primary-soft);
             color: var(--primary);
         }
 
-        .nav-item:hover:not(.active) {
-            background: var(--slate-100);
+        .nav-item i {
+            width: 20px;
+            height: 20px;
         }
 
         /* Main Content */
         .main-content {
-            margin-left: 280px;
             flex: 1;
-            padding: 3rem;
-            max-width: 1200px;
+            margin-left: 260px;
+            padding: 40px;
+            max-width: 1400px;
         }
 
         header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 2.5rem;
+            margin-bottom: 32px;
         }
 
         header h1 {
-            font-size: 1.875rem;
+            font-size: 1.5rem;
             font-weight: 700;
+            color: var(--primary);
         }
 
-        /* Stats */
+        /* Stats Grid */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 1.5rem;
-            margin-bottom: 2.5rem;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 24px;
+            margin-bottom: 40px;
         }
 
         .stat-card {
             background: var(--surface);
-            padding: 1.5rem;
-            border-radius: var(--radius-md);
+            padding: 24px;
+            border-radius: var(--r-lg);
             border: 1px solid var(--border);
             box-shadow: var(--shadow-sm);
+            transition: var(--transition);
         }
 
-        .stat-card .label {
-            font-size: 0.8125rem;
-            font-weight: 600;
-            color: var(--slate-400);
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-card);
+            border-color: var(--accent);
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
             text-transform: uppercase;
-            letter-spacing: 0.025em;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            font-weight: 600;
+            margin-bottom: 8px;
         }
 
-        .stat-card .value {
-            font-size: 2rem;
+        .stat-value {
+            font-size: 2.25rem;
             font-weight: 700;
             color: var(--primary);
-            margin-top: 0.5rem;
+            line-height: 1;
         }
 
         /* Filters */
         .filters-bar {
             background: var(--surface);
-            padding: 1rem;
-            border-radius: var(--radius-md);
+            padding: 16px;
+            border-radius: var(--r-lg);
             border: 1px solid var(--border);
             display: flex;
-            gap: 1rem;
-            margin-bottom: 2rem;
+            gap: 16px;
+            margin-bottom: 24px;
             align-items: center;
+            box-shadow: var(--shadow-sm);
         }
 
-        .search-wrapper {
+        .search-box {
             flex: 1;
             position: relative;
         }
 
-        .search-wrapper i {
+        .search-box i {
             position: absolute;
-            left: 1rem;
+            left: 14px;
             top: 50%;
             transform: translateY(-50%);
-            color: var(--slate-400);
-            width: 18px;
+            color: var(--text-muted);
+            width: 16px;
         }
 
-        .search-wrapper input {
+        .search-box input {
             width: 100%;
-            padding: 0.75rem 1rem 0.75rem 2.75rem;
+            padding: 10px 16px 10px 40px;
             border: 1px solid var(--border);
-            border-radius: var(--radius-sm);
+            border-radius: var(--r-md);
             font-family: inherit;
             outline: none;
+            transition: var(--transition);
         }
 
-        .filters-bar select {
-            padding: 0.75rem 1rem;
+        .search-box input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-soft);
+        }
+
+        select {
+            padding: 10px 16px;
             border: 1px solid var(--border);
-            border-radius: var(--radius-sm);
-            font-family: inherit;
+            border-radius: var(--r-md);
             background: white;
+            font-family: inherit;
             outline: none;
-            min-width: 160px;
+            cursor: pointer;
         }
 
-        /* Leads Table/Cards */
+        /* Lead Cards */
         .lead-card {
             background: var(--surface);
-            border-radius: var(--radius-lg);
             border: 1px solid var(--border);
+            border-radius: var(--r-lg);
+            margin-bottom: 24px;
             overflow: hidden;
-            margin-bottom: 1.5rem;
             box-shadow: var(--shadow-sm);
+            transition: var(--transition);
         }
 
-        .lead-card-header {
-            padding: 1.5rem;
+        .lead-card:hover {
+            box-shadow: var(--shadow-card);
+        }
+
+        .lead-header {
+            padding: 20px 24px;
             border-bottom: 1px solid var(--border);
+            background: #fafbfc;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: var(--slate-50);
         }
 
-        .lead-name-group h3 {
-            font-size: 1.125rem;
+        .lead-title h3 {
+            font-size: 1.1rem;
             font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
-        .lead-name-group p {
-            font-size: 0.875rem;
-            color: var(--slate-400);
-            margin-top: 0.25rem;
+        .lead-meta {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .urgent-badge {
+            font-size: 0.7rem;
+            background: var(--danger);
+            color: white;
+            padding: 4px 10px;
+            border-radius: var(--r-full);
+            text-transform: uppercase;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .interaction-list {
+            padding: 0;
         }
 
         .interaction-item {
-            padding: 1.5rem;
+            padding: 20px 24px;
             border-bottom: 1px solid var(--border);
         }
 
@@ -239,77 +287,51 @@
             border-bottom: none;
         }
 
-        .interaction-meta {
+        .interaction-header {
             display: flex;
-            gap: 0.75rem;
-            margin-bottom: 1rem;
-            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
         }
 
         .badge {
             font-size: 0.75rem;
-            font-weight: 700;
-            padding: 0.25rem 0.75rem;
-            border-radius: var(--radius-full);
-            text-transform: uppercase;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: var(--r-full);
         }
 
-        .badge-high {
-            background: hsla(0, 72%, 50%, 0.1);
-            color: hsl(0, 72%, 50%);
+        .badge-intent {
+            background: var(--primary-soft);
+            color: var(--primary);
         }
 
-        .badge-medium {
-            background: hsla(38, 92%, 50%, 0.1);
-            color: hsl(38, 92%, 50%);
+        .badge-status {
+            background: var(--bg-body);
+            color: var(--text-muted);
+            border: 1px solid var(--border);
         }
 
-        .badge-low {
-            background: hsla(150, 60%, 35%, 0.1);
-            color: hsl(150, 60%, 35%);
-        }
-
-        .status-answered {
-            border-left: 4px solid hsl(150, 60%, 35%);
-        }
-
-        .status-unanswered {
-            border-left: 4px solid hsl(0, 72%, 50%);
-        }
-
-        .q-a {
-            display: grid;
-            gap: 0.75rem;
-        }
-
-        .q-a p {
-            font-size: 0.9375rem;
+        .qa-group p {
+            margin-bottom: 8px;
             line-height: 1.5;
+            font-size: 0.95rem;
         }
 
-        .timestamp {
-            font-size: 0.75rem;
-            color: var(--slate-400);
-            margin-top: 0.5rem;
+        .qa-group strong {
+            color: var(--primary);
         }
 
-        .urgent-tag {
-            background: hsl(0, 72%, 50%);
-            color: white;
-            padding: 0.25rem 0.75rem;
-            border-radius: var(--radius-full);
+        .time {
             font-size: 0.75rem;
-            font-weight: 800;
-            display: flex;
-            align-items: center;
-            gap: 0.25rem;
+            color: var(--text-muted);
+            margin-top: 8px;
         }
     </style>
 </head>
 
 <body>
     <aside class="sidebar">
-        <div class="sidebar-brand">
+        <div class="brand">
             <h2>E2M.</h2>
         </div>
         <nav>
@@ -336,9 +358,9 @@
         <div id="stats-container" class="stats-grid"></div>
 
         <div class="filters-bar">
-            <div class="search-wrapper">
+            <div class="search-box">
                 <i data-lucide="search"></i>
-                <input type="text" id="search-input" placeholder="Filter by name or email">
+                <input type="text" id="search-input" placeholder="Search leads by name or email...">
             </div>
             <select id="intent-filter">
                 <option value="ALL">All Intents</option>
@@ -374,16 +396,16 @@
 
             statsContainer.innerHTML = `
         <div class="stat-card">
-          <p class="label">Total Leads</p>
-          <p class="value">${leads.length}</p>
+          <div class="stat-label">Total Leads</div>
+          <div class="stat-value">${leads.length}</div>
         </div>
         <div class="stat-card">
-          <p class="label">Total Inquiries</p>
-          <p class="value">${totalInteractions}</p>
+          <div class="stat-label">Total Inquiries</div>
+          <div class="stat-value">${totalInteractions}</div>
         </div>
         <div class="stat-card">
-          <p class="label">Pending Review</p>
-          <p class="value" style="color: ${unansweredCount > 0 ? 'hsl(0, 72%, 50%)' : 'inherit'}">${unansweredCount}</p>
+          <div class="stat-label">Pending Review</div>
+          <div class="stat-value" style="color: ${unansweredCount > 0 ? 'var(--danger)' : 'inherit'}">${unansweredCount}</div>
         </div>
       `;
 
@@ -396,34 +418,37 @@
             });
 
             if (filteredLeads.length === 0) {
-                leadsContainer.innerHTML = '<div style="padding: 4rem; text-align: center; color: var(--slate-400)">No matches found</div>';
+                leadsContainer.innerHTML = '<div style="padding: 40px; text-align: center; color: var(--text-muted)">No matching records found.</div>';
                 lucide.createIcons();
                 return;
             }
 
             leadsContainer.innerHTML = filteredLeads.map(lead => `
         <div class="lead-card">
-          <div class="lead-card-header">
-            <div class="lead-name-group">
-              <h3>${lead.name} ${lead.interactions.some(i => i.status === 'UNANSWERED' && i.intent === 'HIGH') ? '<span class="urgent-tag"><i data-lucide="zap"></i> Priority</span>' : ''}</h3>
-              <p>${lead.email} • Lead ID: ${lead.timestamp.slice(-6)}</p>
+          <div class="lead-header">
+            <div class="lead-title">
+              <h3>
+                ${lead.name}
+                ${lead.interactions.some(i => i.status === 'UNANSWERED' && i.intent === 'HIGH') ?
+                    '<span class="urgent-badge"><i data-lucide="zap" width="12"></i> Action Req.</span>' : ''}
+              </h3>
+              <div class="lead-meta">${lead.email} • ${new Date(lead.timestamp).toLocaleDateString()}</div>
             </div>
-            <div class="timestamp">${new Date(lead.timestamp).toLocaleDateString()}</div>
           </div>
           <div class="interaction-list">
             ${lead.interactions
                     .filter(i => (intentVal === 'ALL' || i.intent === intentVal) && (statusVal === 'ALL' || i.status === statusVal))
                     .map(i => `
-              <div class="interaction-item status-${i.status.toLowerCase()}">
-                <div class="interaction-meta">
-                  <span class="badge badge-${i.intent.toLowerCase()}">${i.intent} Intent</span>
-                  <span class="badge" style="background: var(--slate-100); color: var(--slate-600)">${i.status}</span>
+              <div class="interaction-item">
+                <div class="interaction-header">
+                  <span class="badge badge-intent">${i.intent} Intent</span>
+                  <span class="badge badge-status">${i.status}</span>
                 </div>
-                <div class="q-a">
-                  <p><strong>Query:</strong> ${i.question}</p>
-                  <p><strong>Response:</strong> ${i.answer}</p>
+                <div class="qa-group">
+                  <p><strong>Q:</strong> ${i.question}</p>
+                  <p><strong>A:</strong> ${i.answer}</p>
                 </div>
-                <div class="timestamp">${new Date(i.timestamp).toLocaleTimeString()}</div>
+                <div class="time">${new Date(i.timestamp).toLocaleTimeString()}</div>
               </div>
             `).join('')}
           </div>

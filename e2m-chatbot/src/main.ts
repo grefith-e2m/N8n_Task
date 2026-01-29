@@ -5,29 +5,24 @@ import { ScraperAgent } from './agents/ScraperAgent'
 import { IntentAgent } from './agents/IntentAgent'
 import faqs from './data/faqs.json'
 
-// Declare lucide globally 
-declare const lucide: any;
-
 const app = document.querySelector<HTMLDivElement>('#app')!
 
 app.innerHTML = `
   <div id="e2m-chatbot-container">
     <div class="chatbot-trigger" id="chatbot-trigger">
-      <i data-lucide="message-square"></i>
+      <span>💬</span>
     </div>
     <div class="chatbot-modal" id="chatbot-modal">
       <div class="chatbot-header">
         <h2>E2M Solutions</h2>
-        <p>Premium White Label Partner</p>
+        <p>Your White Label Partner</p>
       </div>
       <div class="chat-content" id="chat-content">
         <!-- Content will be dynamic -->
       </div>
       <div class="chat-input-area" id="chat-input-area" style="display: none;">
-        <input type="text" id="user-input" placeholder="Ask your question...">
-        <button id="send-btn">
-          <i data-lucide="send"></i>
-        </button>
+        <input type="text" id="user-input" placeholder="Type your question...">
+        <button id="send-btn">Send</button>
       </div>
     </div>
   </div>
@@ -40,21 +35,9 @@ const inputArea = document.getElementById('chat-input-area')!
 const userInput = document.getElementById('user-input') as HTMLInputElement
 const sendBtn = document.getElementById('send-btn')!
 
-// Helper to refresh icons
-const refreshIcons = () => {
-  if (typeof lucide !== 'undefined') {
-    lucide.createIcons();
-  }
-};
-
-// Initial icon refresh
-refreshIcons();
-
 trigger.addEventListener('click', () => {
   modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex'
-  if (modal.style.display === 'flex') {
-    initChat()
-  }
+  initChat()
 })
 
 function initChat() {
@@ -68,34 +51,44 @@ function initChat() {
 function showLeadForm() {
   content.innerHTML = `
     <div class="lead-form">
-      <p>Welcome! Please share your details to start the conversation.</p>
-      <input type="text" id="lead-name" placeholder="Business Name or Full Name" required>
-      <input type="email" id="lead-email" placeholder="Professional Email" required>
-      <button class="btn-primary" id="start-chat-btn">Start Conversation</button>
+      <p>Hello! Please provide your details to start the conversation.</p>
+      <input type="text" id="lead-name" placeholder="Full Name" required>
+      <input type="email" id="lead-email" placeholder="Email Address" required>
+      <button class="btn-primary" id="start-chat-btn">Start Chat</button>
     </div>
   `
-  document.getElementById('start-chat-btn')?.addEventListener('click', () => {
+  document.getElementById('start-chat-btn')?.addEventListener('click', async () => {
     const name = (document.getElementById('lead-name') as HTMLInputElement).value
     const email = (document.getElementById('lead-email') as HTMLInputElement).value
+    const btn = document.getElementById('start-chat-btn') as HTMLButtonElement;
+
     if (name && email) {
-      LeadAgent.saveLead(name, email)
-      showChatInterface()
+      try {
+        btn.innerText = 'Connecting...';
+        btn.disabled = true;
+        await LeadAgent.registerUser(name, email)
+        showChatInterface()
+      } catch (e) {
+        console.error(e);
+        btn.innerText = 'Start Chat';
+        btn.disabled = false;
+        alert('Could not connect. Please check configuration.');
+      }
     } else {
-      alert('Please provide your name and email to continue.')
+      alert('Please fill in both name and email.')
     }
   })
 }
 
 function showChatInterface() {
   inputArea.style.display = 'flex'
+  const lead = LeadAgent.getLead();
   content.innerHTML = `
     <div class="message bot">
-      Hi ${LeadAgent.getLead().name}! How can E2M Solutions assist your agency growth today?
+      Hi ${lead?.name || 'there'}! How can E2M Solutions help your agency today?
     </div>
     <div class="faq-container" id="faq-container"></div>
   `
-  refreshIcons(); // In case any new icons were rendered
-
   const faqContainer = document.getElementById('faq-container')!
   faqs.forEach(f => {
     const chip = document.createElement('div')
@@ -106,8 +99,8 @@ function showChatInterface() {
   })
 }
 
-function handleMessage(text: string) {
-  if (!text.trim()) return
+async function handleMessage(text: string) {
+  if (!text) return
 
   // Display User Message
   appendMessage(text, 'user')
@@ -116,21 +109,22 @@ function handleMessage(text: string) {
   // Agent Logic
   const intent = IntentAgent.classify(text)
   let answer = FAQAgent.findMatch(text)
-  let status: 'ANSWERED' | 'UNANSWERED' = 'ANSWERED'
+  let status: 'ANSWERED' | 'UNANSWERED' = 'ANSWERED';
 
   if (answer === 'NO_MATCH') {
-    answer = ScraperAgent.answer(text)
-  }
-
-  if (answer === 'NO_ANSWER_FOUND') {
-    status = 'UNANSWERED'
-    answer = "Thank you for your query. Our team or the concerned person will review your request and get back to you shortly."
+    const scraped = ScraperAgent.answer(text)
+    if (scraped === 'NO_ANSWER_FOUND') {
+      status = 'UNANSWERED';
+      answer = "Thank you for your query. Our team or the concerned person will review your request and contact you shortly.";
+    } else {
+      answer = scraped;
+    }
   }
 
   // Display Bot Message
-  setTimeout(() => {
+  setTimeout(async () => {
     appendMessage(answer, 'bot')
-    LeadAgent.logInteraction(text, answer, intent, status)
+    await LeadAgent.logInteraction(text, answer, intent, status)
   }, 500)
 }
 
