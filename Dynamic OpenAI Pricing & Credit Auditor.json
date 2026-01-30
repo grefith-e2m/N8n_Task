@@ -1,0 +1,353 @@
+{
+  "name": "Dynamic OpenAI Pricing & Credit Auditor",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "338af647-ac0a-4926-a146-a4677d1715a7",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        48
+      ],
+      "id": "cd27097c-3909-4231-8eb1-b62879cde1ec",
+      "name": "Inbound Usage Webhook",
+      "webhookId": "338af647-ac0a-4926-a146-a4677d1715a7"
+    },
+    {
+      "parameters": {
+        "url": "https://platform.openai.com/docs/pricing?legacy-pricing=standard&latest-pricing=standard",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+            },
+            {
+              "name": "Accept",
+              "value": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        224,
+        48
+      ],
+      "id": "eedc8d74-af96-440f-8ea7-5ef8ad83392b",
+      "name": "OpenAI Pricing Scraper"
+    },
+    {
+      "parameters": {
+        "operation": "extractHtmlContent",
+        "extractionValues": {
+          "values": [
+            {
+              "key": "data",
+              "cssSelector": "tr",
+              "returnArray": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        448,
+        48
+      ],
+      "id": "8fbffb22-c08d-4467-9403-e1ed3ff00664",
+      "name": "Pricing Table Extractor"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. DATA FETCHING (Fixed to match your node name: HTML1)\nlet rawDataArray;\ntry {\n    // We pull the 'data' array specifically from your HTML1 node\n    rawDataArray = $('Pricing Table Extractor').first().json.data;\n    \n    if (!rawDataArray || !Array.isArray(rawDataArray)) {\n        throw new Error(\"Data is not an array\");\n    }\n} catch (e) {\n    throw new Error(\"Connection Error: Code node cannot see 'HTML1' data. Ensure the HTML node is named exactly 'HTML1'.\");\n}\n\n// 2. WEBHOOK INPUTS\nconst webhookBody = $('Inbound Usage Webhook').first().json.body;\nconst targetModel = webhookBody.model;\n\n// 3. STRICT SLICE: 33 to 80 (Standard Pricing)\n// Slice 33 to 81 ensures we get index 80\nconst standardPricingData = rawDataArray.slice(33, 81);\n\n// 4. CONFIGURABLE CREDIT VALUE\nconst creditValueMap = {\n    \"o3-deep-research\": 0.50,\n    \"gpt-4o\": 0.10,\n    \"gpt-4o-mini\": 0.05,\n    \"default\": 0.10 \n};\nconst CREDIT_VALUE = creditValueMap[targetModel] || creditValueMap[\"default\"];\n\n// 5. PRICE EXTRACTION LOGIC\nfunction getPrices(data, model) {\n    // Finds the row that starts with the model name\n    const row = data.find(r => r.toLowerCase().startsWith(model.toLowerCase()));\n    \n    if (row) {\n        const parts = row.split('$');\n        // Based on your specific format: Model$Input$Cached$Output\n        return {\n            input: parseFloat(parts[1]),\n            output: parseFloat(parts[parts.length - 1])\n        };\n    }\n    return null;\n}\n\nconst prices = getPrices(standardPricingData, targetModel);\n\n// 6. ERROR HANDLING\nif (!prices) {\n    throw new Error(`Model '${targetModel}' not found in the Standard Price list (Indices 33-80).`);\n}\n\n// 7. TOKEN & COST CALCULATION\nconst inputTokens = Math.ceil(webhookBody.input_prompt.length / 4);\nconst outputTokens = Math.ceil(webhookBody.output_response.length / 4);\n\nconst inputCost = (inputTokens / 1000000) * prices.input;\nconst outputCost = (outputTokens / 1000000) * prices.output;\nconst totalCost = inputCost + outputCost;\n\n// 8. CREDIT CALCULATION\nconst creditsUsed = totalCost / CREDIT_VALUE;\n\n// 9. FINAL 15 COLUMNS FOR GOOGLE SHEETS\nreturn [{\n    \"Timestamp\": new Date().toISOString(),\n    \"User ID\": webhookBody.user_id,\n    \"Model\": targetModel,\n    \"Input Tokens\": inputTokens,\n    \"Output Tokens\": outputTokens,\n    \"Input Price ($/1M)\": prices.input,\n    \"Output Price ($/1M)\": prices.output,\n    \"Input Cost ($)\": inputCost.toFixed(10),\n    \"Output Cost ($)\": outputCost.toFixed(10),\n    \"Total Cost ($)\": totalCost.toFixed(10),\n    \"Credit Value ($)\": CREDIT_VALUE,\n    \"Credits Used\": creditsUsed.toFixed(8),\n    \"Pricing Fetch Timestamp\": new Date().toISOString(),\n    \"Input Prompt\": webhookBody.input_prompt,\n    \"Output Response\": webhookBody.output_response\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        48
+      ],
+      "id": "1928eebf-b96a-45fc-98d0-14d1f71226ce",
+      "name": "Pricing Calculator"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1ZQaD39MlypewHvoyi4niA_HJC4qLdod5FIQilMMr-bI",
+          "mode": "list",
+          "cachedResultName": "Record Billing Data",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ZQaD39MlypewHvoyi4niA_HJC4qLdod5FIQilMMr-bI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "LLM_Usage_Calculations",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ZQaD39MlypewHvoyi4niA_HJC4qLdod5FIQilMMr-bI/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "User ID": "={{ $json[\"User ID\"] }}",
+            "Model": "={{ $json.Model }}",
+            "Input Tokens": "={{ $json[\"Input Tokens\"] }}",
+            "Output Tokens": "={{ $json[\"Output Tokens\"] }}",
+            "Input Price ($/1M)": "={{ $json[\"Input Price ($/1M)\"] }}",
+            "Output Price ($/1M)": "={{ $json[\"Output Price ($/1M)\"] }}",
+            "Input Cost ($)": "={{ $json[\"Input Cost ($)\"] }}",
+            "Total Cost ($)": "={{ $json[\"Total Cost ($)\"] }}",
+            "Credit Value ($)": "={{ $json[\"Credit Value ($)\"] }}",
+            "Credits Used": "={{ $json[\"Credits Used\"] }}",
+            "Pricing Fetch Timestamp": "={{ $json[\"Pricing Fetch Timestamp\"] }}",
+            "Input Prompt": "={{ $json[\"Input Prompt\"] }}",
+            "Output Response": "={{ $json[\"Output Response\"] }}",
+            "Timestamp": "={{ $json.Timestamp }}",
+            "Output Cost ($)": "={{ $json[\"Output Cost ($)\"] }}"
+          },
+          "matchingColumns": [
+            "Timestamp, User ID, Model, Input Tokens, Output Tokens, Input Price ($/1M), Output Price ($/1M), Input Cost ($), Output Cost ($), Total Cost ($), Credit Value ($), Credits Used, Pricing Fetch Timestamp, Input Prompt, Output Response"
+          ],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "User ID",
+              "displayName": "User ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Model",
+              "displayName": "Model",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Input Tokens",
+              "displayName": "Input Tokens",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Output Tokens",
+              "displayName": "Output Tokens",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Input Price ($/1M)",
+              "displayName": "Input Price ($/1M)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Output Price ($/1M)",
+              "displayName": "Output Price ($/1M)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Input Cost ($)",
+              "displayName": "Input Cost ($)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Output Cost ($)",
+              "displayName": "Output Cost ($)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Total Cost ($)",
+              "displayName": "Total Cost ($)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Credit Value ($)",
+              "displayName": "Credit Value ($)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Credits Used",
+              "displayName": "Credits Used",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Pricing Fetch Timestamp",
+              "displayName": "Pricing Fetch Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Input Prompt",
+              "displayName": "Input Prompt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Output Response",
+              "displayName": "Output Response",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        896,
+        48
+      ],
+      "id": "0faee33f-7b07-43fd-8ce2-500e80dc2bd3",
+      "name": "Record Billing Data",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "IApdEjLW5FHw5HUW",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Inbound Usage Webhook": {
+      "main": [
+        [
+          {
+            "node": "OpenAI Pricing Scraper",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Pricing Scraper": {
+      "main": [
+        [
+          {
+            "node": "Pricing Table Extractor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pricing Table Extractor": {
+      "main": [
+        [
+          {
+            "node": "Pricing Calculator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pricing Calculator": {
+      "main": [
+        [
+          {
+            "node": "Record Billing Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "43f7d405-2434-4e03-8646-e264c0c22bfa",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "98de5aeae2e23f38b8955904e18c87188ec8ac7407a49d2fb176d9de838fde06"
+  },
+  "id": "9mp8b3wnSwdFV_uBf9vm9",
+  "tags": []
+}

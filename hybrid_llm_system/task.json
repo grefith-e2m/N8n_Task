@@ -1,0 +1,68 @@
+[
+  {
+    "task_name": "Investigate Server Resource Usage & Rate-Limit Issue [Panama Equity]",
+    "description": "The website is consuming higher-than-normal resources, or there may have been a sudden spike in traffic. To investigate this further from the resource-usage perspective",
+    "comments": [
+      "The client did report an issue yesterday with the website also not translating their listings anymore?, For this task, the site has gone down twice in the last two days, so we need to check why this is happening.",
+      "Pls add some details to the task regarding the requirement",
+      "Hi Please take care of this task. Thank you!"
+    ]
+  },
+  {
+    "task_name": "Add Images To Post",
+    "description": "Nelson Exteriors---\nhttps://www.nelson-exteriors.com/blog/guide-to-deck-installation-atlanta\nBlog: The Ultimate Guide to Deck Installation, Repair & Rebuilding in Metro Atlanta\nPlease add the images inside the content document to the published page. The client placed images where they should be added to the blog. I have left the comments where they have placed the images unresolved, so you can easily identify those.",
+    "comments": [
+      "We have added images as per the client's comment on the post. URL: https://www.nelson-exteriors.com/blog/guide-to-deck-installation-atlanta Please review it and let us know if any other changes are needed. Thank you!",
+      "Hello Please validate the image location is as per clients's doc initiate QA for this blog. URL: https://www.nelson-exteriors.com/blog/guide-to-deck-installation-atlanta",
+      "I have verified the images in the blog post . It's perfectly aligned with the client requirement. URL: https://www.nelson-exteriors.com/blog/guide-to-deck-installation-atlanta Screenshot : https://www.dropbox.com/scl/fi/6tie2p62rd8zu59uj6pcp/Full-screen-December-09-2025-14-55-57.mp4?rlkey=e83rostxqyt8l0m19akgbl50v&dl=0 Let me know if you have any questions or concerns",
+      "We have added images as per the client's comment on the post. URL: https://www.nelson-exteriors.com/blog/guide-to-deck-installation-atlanta Please review it and let us know if any other changes are needed. Thank you! Notes: We have followed SOP for image implementation, added an alt tag, and adjusted the image ratio to 500x500px as per SOP."
+    ]
+  },
+  {
+    "task_name": "Website Update - Happy Tails",
+    "description": "https://happytails.tips/wp-admin Username: test The need here is to cleanup the site for easier updates in the future. It is built in Elementor but we need a consistent header/nav and footer across the site, with a copyright date in the footer that updates dynamically each year. Also, favicon should be updated. Please follow this wireframe to build the homepage and for the header and footer: https://docs.google.com/drawings/d/1ZGVrLyTSUYONCdJxBNHLzA3dfNq7QvJyZtS0AJQMRLI/edit?usp=sharing\nNOTE: the hero image of the 3 animals should STAY, don't swap that out All logo variations are attached, as are images that may be needed. You do NOT need to build out any interior pages beyond just getting the header and footer set up properly.",
+    "comments": [
+      "Hi We have started working on the landing page as per the provided instructions. We have created the header and footer according to the mockup, and for now, they are visible only on the landing page. We have also started working on the landing page sections as per the wireframe. You can review it here: https://happytails.tips/landing/ We will continue working on the remaining parts of the landing page. Please check and let me know if you have any questions.",
+      "Hello We have completed the below sections with responsiveness on the landing page as per the provided instructions: We Know How: https://prnt.sc/hliuRd5nj76r Popular Solutions: https://prnt.sc/mBZhiO3MrN5v Restore Your Pet’s Balance: https://prnt.sc/m-b-Nx6O0CsB URL: https://happytails.tips/landing/ #Note: Could you please provide this image? https://prnt.sc/NYrLZXrgSX3n Right now, we have added a relevant image. Working on Natural Healing section. https://prnt.sc/Ltu2-ZpMP3uW Thank You!",
+      "Support Hello We have completed the Natural Healing section with responsive. screenshot: https://prnt.sc/JK7OViWyhX4g also we have completed the Download Our Free Guide section, except for the form. screenshot: https://prnt.sc/3-SKCs0zJy0x Note: The site uses a form script, please confirm whether we should add that script or create the form using a plugin. We have also checked the responsive design. The landing page is now completed with responsiveness, except for the form section. screenshot: https://prnt.sc/jcCq-0-fln_Z URL: https://happytails.tips/landing/"
+    ]
+  },
+  {
+    "task_name": "Configure products and optimize the checkout process to improve user experience and conversions",
+    "description": "Create and configure 10 simple and variable products in WooCommerce. Set product categories, tags, pricing, SKU, and inventory management. Configure shipping zones, shipping methods, and tax settings. Enable and test payment gateways (Stripe/PayPal/CODS).",
+    "comments": [
+      "configuration of woocommerce done.",
+      "product categories created",
+      "Client want stripe payment gateway to integrate in website.",
+      "make sure all the api key keep in safe"
+    ]
+  },
+  {
+    "task_name": "Upside Therapy Website",
+    "description": "PMS - https://3.basecamp.com/5970095/buckets/44366160/todolists/9210554592 =============================== Project Brief - https://docs.google.com/document/d/13IaJpANJbkx43UB2r21yN2L3rnB9myuiTbyFMDKO-Is/edit?tab=t.prl7gm2b8k04 We are doing a new website for: https://upsidetherapy.com/ This will be on an entirely new Wordpress, prefer to design it with Elementor. Location information, phone number can be found on their site. =============================== Loom Video - https://www.loom.com/share/1b0f05011dd041cf82d88fef5a57163d?sid=d79e59ca-3691-4daf-a755-d3cbde1bd6fe =============================== Folder - https://drive.google.com/drive/folders/17QiRZ1cieMmPZ-wqoZRcUMxCauOtEn1m?usp=sharing",
+    "comments": [
+      "Will start"
+    ]
+  },
+  {
+    "task_name": "VSS add common footer in stage",
+    "description": "login url: https://stg-bgvsstudios-staging.kinsta.cloud/wp-admin/ user: test @devteam We need your help to add another section to the bottom of the footer. I have attached a .pdf mockup of how this should look. Requirements: Font: Brother-1816 Background color: #1F2A4A The logo needs to link to https://clubworks.com/ Each company name needs to be a link in the order listed below Do not include Visionary Spectacle Studios on this site Links: Peacock + Lewis: https://peacockandlewis.com/ JBD JGA: https://www.jbd-jga.com/ GGA: https://ggapartners.com/ Private Club Films: https://www.privateclubfilms.com/ Clubworks Engineering: https://clubworks.com/partner-firms/clubworks-engineering/ Buffalo Groupe: https://buffalogroupe.com/ KDC: https://kdcarchitects.com/ Please let me know if you have any questions, or if any issues arise.",
+    "comments": [
+      "Will integrate it."
+    ]
+  },
+  {
+    "task_name": "Homepage Hero Section Implementation",
+    "description": "Design and implement the homepage hero section featuring a full-width banner with a background image slider, headline text, subheading, and two call-to-action buttons linking to Services and Contact pages. Ensure the section is optimized for fast loading and adapts properly across desktop, tablet, and mobile devices.",
+    "comments": [
+      "We will keep colour code same like in existing theme"
+    ]
+  },
+  {
+    "task_name": "Mobile Responsiveness Fixes",
+    "description": "Review all major pages on mobile and tablet devices to fix layout issues such as overlapping elements, font scaling problems, misaligned buttons, and broken grids. Ensure touch-friendly spacing and consistent UI across screen sizes.",
+    "comments": [
+      "We will first complete in android device once its complete then start ios device responsive."
+    ]
+  }
+]

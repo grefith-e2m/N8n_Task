@@ -1,0 +1,11 @@
+# Configuration and Environment
+python-dotenv==1.0.1
+
+# HTTP Client for API Requests
+requests==2.32.3
+
+# Data Handling
+pydantic==2.10.0
+
+# Optional: Framework for advanced piping if needed later
+langchain-core==0.1.0
